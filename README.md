@@ -50,6 +50,10 @@ and get the cache for calculating cider score.
 $ python scripts/prepro_ngrams.py --input_json data/dataset_coco.json --dict_json data/cocotalk.json --output_pkl data/coco-train --split train
 ```
 
+## Get cider and coco-caption
+
+Get [cider](https://github.com/ruotianluo/cider) and [coco-caption](https://github.com/ruotianluo/coco-caption).
+
 ## Train using XE first
 
 ```bash

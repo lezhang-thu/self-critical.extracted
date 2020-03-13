@@ -1,5 +1,5 @@
-model: log_fc.backup/model.pth
-infos_path: log_fc.backup/infos_fc.pkl
+model: log_fc_rl/model.pth
+infos_path: log_fc_rl/infos_fc_rl.pkl
 
 split: test
 num_images: 5000
