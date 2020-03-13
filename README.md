@@ -43,7 +43,7 @@ This will create `data/cocobu_fc`, `data/cocobu_att` and `data/cocobu_box`.
 
 ### Prepare for self-critical
 
-When traing using self-critical, you should first preprocess the dataset 
+When training using self-critical, you should first preprocess the dataset 
 and get the cache for calculating cider score.
 
 ```bash
@@ -52,7 +52,7 @@ $ python scripts/prepro_ngrams.py --input_json data/dataset_coco.json --dict_jso
 
 ## Get cider and coco-caption
 
-Get [cider](https://github.com/ruotianluo/cider) and [coco-caption](https://github.com/ruotianluo/coco-caption).
+Get [cider](https://github.com/ruotianluo/cider) and [coco-caption](https://github.com/ruotianluo/coco-caption). Replace corresponding directories of this repo.
 
 ## Train using XE first
 
@@ -68,7 +68,7 @@ The training is running for `max_epoch` epochs specified in `configs/fc.yml`.
 After the XE training, we can restart the training using self-critical for an extra number
 of epochs, which is the difference of `max_epcoh`s in `configs/fc_rl.yml` and `configs/fc.yml`.
 
-We need to copy the pretrained XE trained model, as follows.
+We need to copy the pretrained XE trained model as follows.
 
 ```bash
 mkdir log_fc_rl
@@ -76,18 +76,18 @@ cp log_fc/model.pth log_fc_rl
 cp log_fc/infos_fc.pkl log_fc_rl/infos_fc_rl.pkl
 ```
 
-With all these, the training can be started.
+With all these, the training can be restarted.
 
 ```bash
 $ python train.py --id fc_rl --cfg configs/fc_rl.yml
 ```
 
 Note: Watch the prompts. Make sure you see two messages `infos load success` and `model load success`.
-A common pitfall is forgetting the `--id fc_rl` when starting training.
+A common pitfall is forgetting the `--id fc_rl` when restarting the training.
 
 ## Watch the training
 
-This are literally no prompts when training, except the messages given by `coco-caption`.
+There are literally no prompts when training, except the messages given by `coco-caption`.
 The training process can be watched by `$ tensorboard --logdir=log_fc` for XE or `$ tensorboard --logdir=log_fc_rl` for self-critical, and
 visit the prompted ***IP*** address and port (given by `tensorboard`) in browser.
 
