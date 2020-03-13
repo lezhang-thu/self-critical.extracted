@@ -1,0 +1,8 @@
+_BASE_: fc.yml
+learning_rate: 0.00005
+
+max_epochs: 50
+cached_tokens: coco-train-idxs
+
+self_critical: 1 
+train_sample_n: 5

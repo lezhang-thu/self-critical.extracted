@@ -1,0 +1,7 @@
+model: log_fc.backup/model.pth
+infos_path: log_fc.backup/infos_fc.pkl
+
+split: test
+num_images: 5000
+beam_size: 2
+
