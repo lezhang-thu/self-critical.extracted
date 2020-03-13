@@ -1,4 +1,4 @@
-from .AttPPOModel import NewFCModel
+from .AttModel import NewFCModel
 
 
 def setup(opt):

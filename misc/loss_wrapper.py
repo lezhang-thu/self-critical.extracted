@@ -1,6 +1,7 @@
 import torch
-import misc.utils_ppo as utils
-from misc.rewards_ppo import get_self_critical_reward
+
+import misc.utils as utils
+from misc.rewards import get_self_critical_reward
 
 
 class LossWrapper(torch.nn.Module):

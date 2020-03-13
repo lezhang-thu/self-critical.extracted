@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import misc.utils_ppo as utils
-from .CaptionPPOModel import CaptionModel
+import misc.utils as utils
+from .CaptionModel import CaptionModel
 
 
 class NewFCModel(CaptionModel):

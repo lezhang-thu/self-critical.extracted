@@ -1,9 +1,8 @@
 import argparse
 import sys
 
-import misc.utils_ppo as utils
-
 import eval_utils
+import misc.utils as utils
 import models
 from dataloader import *
 from misc.config import CfgNode

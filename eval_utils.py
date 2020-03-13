@@ -2,10 +2,11 @@ import json
 import os
 import sys
 
-import misc.utils_ppo as utils
 import numpy as np
 import torch
 import torch.nn.functional as F
+
+import misc.utils as utils
 
 # load coco-caption if available
 try:

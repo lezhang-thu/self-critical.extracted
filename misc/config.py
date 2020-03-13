@@ -1,13 +1,12 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # Copy from fvcore
 
+import io as PathManager
 import logging
 import os
-from typing import Any
+
 import yaml
 from yacs.config import CfgNode as _CfgNode
-
-import io as PathManager
 
 BASE_KEY = "_BASE_"
 
@@ -32,7 +31,7 @@ class CfgNode(_CfgNode):
     """
 
     @staticmethod
-    def load_yaml_with_base(filename, allow_unsafe = False):
+    def load_yaml_with_base(filename, allow_unsafe=False):
         """
         Just like `yaml.load(open(filename))`, but inherit attributes from its
             `_BASE_`.
@@ -79,7 +78,7 @@ class CfgNode(_CfgNode):
             if base_cfg_file.startswith("~"):
                 base_cfg_file = os.path.expanduser(base_cfg_file)
             if not any(
-                map(base_cfg_file.startswith, ["/", "https://", "http://"])
+                    map(base_cfg_file.startswith, ["/", "https://", "http://"])
             ):
                 # the path to base cfg is relative to the config file itself.
                 base_cfg_file = os.path.join(
@@ -94,7 +93,7 @@ class CfgNode(_CfgNode):
             return base_cfg
         return cfg
 
-    def merge_from_file(self, cfg_filename, allow_unsafe = False):
+    def merge_from_file(self, cfg_filename, allow_unsafe=False):
         """
         Merge configs from a given yaml file.
 
@@ -116,7 +115,7 @@ class CfgNode(_CfgNode):
             cfg_other (CfgNode): configs to merge from.
         """
         assert (
-            BASE_KEY not in cfg_other
+                BASE_KEY not in cfg_other
         ), "The reserved key '{}' can only be used in files!".format(BASE_KEY)
         return super().merge_from_other_cfg(cfg_other)
 
@@ -127,7 +126,7 @@ class CfgNode(_CfgNode):
         """
         keys = set(cfg_list[0::2])
         assert (
-            BASE_KEY not in keys
+                BASE_KEY not in keys
         ), "The reserved key '{}' can only be used in files!".format(BASE_KEY)
         return super().merge_from_list(cfg_list)
 
