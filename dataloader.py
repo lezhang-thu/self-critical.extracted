@@ -337,22 +337,6 @@ class DataLoader:
     def seq_length(self):
         return self.get_seq_length()
 
-    def state_dict(self):
-        def get_prefetch_num(split):
-            if self.loaders[split].num_workers > 0:
-                return (self.iters[split]._send_idx - self.iters[split]._rcvd_idx) * self.batch_size
-            else:
-                return 0
-
-        return {split: loader.sampler.state_dict(get_prefetch_num(split)) \
-                for split, loader in self.loaders.items()}
-
-    def load_state_dict(self, state_dict=None):
-        if state_dict is None:
-            return
-        for split in self.loaders.keys():
-            self.loaders[split].sampler.load_state_dict(state_dict[split])
-
 
 class MySampler(data.sampler.Sampler):
     def __init__(self, index_list, shuffle, wrap):
@@ -393,15 +377,3 @@ class MySampler(data.sampler.Sampler):
     def __len__(self):
         return len(self.index_list)
 
-    def load_state_dict(self, state_dict=None):
-        if state_dict is None:
-            return
-        self._index_list = state_dict['index_list']
-        self.iter_counter = state_dict['iter_counter']
-
-    def state_dict(self, prefetched_num=None):
-        prefetched_num = prefetched_num or 0
-        return {
-            'index_list': self._index_list,
-            'iter_counter': self.iter_counter - prefetched_num
-        }

@@ -29,7 +29,6 @@ def train(opt):
     infos = {
         'iter': 0,
         'epoch': 0,
-        'loader_state_dict': None,
         'vocab': loader.get_vocab(),
     }
     # Load old infos (if there is) and check if models are compatible

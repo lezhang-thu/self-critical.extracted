@@ -134,7 +134,7 @@ class NewFCModel(CaptionModel):
             # sample the next word
             if t == self.seq_length:  # skip if we achieve maximum length
                 break
-            it, sampleLogprobs = self.sample_next_word(logprobs, sample_method)
+            it, _ = self.sample_next_word(logprobs, sample_method)
 
             # stop when all finished
             if t == 0:
@@ -142,6 +142,7 @@ class NewFCModel(CaptionModel):
             else:
                 unfinished = unfinished * (it > 0)
             it = it * unfinished.type_as(it)
+
             seq[:, t] = it
             seqLogprobs[:, t] = logprobs
             # quit loop if all sequences have finished
