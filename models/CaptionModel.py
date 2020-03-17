@@ -159,12 +159,12 @@ class CaptionModel(nn.Module):
     def sample_next_word(self, logprobs, sample_method):
         assert sample_method in {'greedy', 'sample'}
         if sample_method == 'greedy':
-            sampleLogprobs, it = torch.max(logprobs.data, 1)
+            sampleLogprobs, it = torch.max(logprobs, 1)
             it = it.view(-1).long()
         else:
-            it = torch.distributions.Categorical(logits=logprobs.detach()).sample()
+            it = torch.distributions.Categorical(logits=logprobs).sample()
             sampleLogprobs = logprobs.gather(1, it.unsqueeze(1))  # gather the logprobs at sampled positions
-        return it, sampleLogprobs
+        return it.detach(), sampleLogprobs
 
     def decode_sequence(self, seq):
         return utils.decode_sequence(self.vocab, seq)
