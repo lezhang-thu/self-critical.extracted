@@ -45,12 +45,11 @@ class NewFCModel(CaptionModel):
                                                                                       )
 
         for i in range(seq.size(1) - 1):
-            it = seq[:, i].clone()
             # break if all the sequences end
             if i >= 1 and seq[:, i].sum() == 0:
                 break
 
-            output, state = self.get_logprobs_state(it, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, state)
+            output, state = self.get_logprobs_state(seq[:, i], p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, state)
             outputs[:, i] = output
 
         return outputs
@@ -66,43 +65,31 @@ class NewFCModel(CaptionModel):
 
     def _sample_beam(self, fc_feats, att_feats, att_masks=None, opt={}):
         beam_size = opt.get('beam_size', 10)
-        sample_n = opt.get('sample_n', 10)
-        # when sample_n == beam_size then each beam is a sample.
-        assert sample_n == 1 or sample_n == beam_size, 'when beam search, sample_n == 1 or beam search'
         batch_size = fc_feats.size(0)
 
         p_fc_feats, p_att_feats, pp_att_feats, p_att_masks = self._prepare_feature(fc_feats, att_feats, att_masks)
 
         # let's assume this for now
         assert beam_size <= self.vocab_size + 1
-        seq = fc_feats.new_zeros((batch_size * sample_n, self.seq_length), dtype=torch.long)
-        seqLogprobs = fc_feats.new_zeros(batch_size * sample_n, self.seq_length, self.vocab_size + 1)
+        seq = fc_feats.new_zeros((batch_size, self.seq_length), dtype=torch.long)
+        seqLogprobs = fc_feats.new_zeros(batch_size, self.seq_length, self.vocab_size + 1)
         # let's process every image independently for now, for simplicity
 
-        self.done_beams = [[] for _ in range(batch_size)]
-
         state = self.init_hidden(batch_size)
-
         # first step, feed bos
         it = fc_feats.new_zeros([batch_size], dtype=torch.long)
-        logprobs, state = self.get_logprobs_state(it, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, state)
 
+        # logprobs shape is batch_size x (vocab_size + 1)
+        logprobs, state = self.get_logprobs_state(it, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, state)  
         p_fc_feats, p_att_feats, pp_att_feats, p_att_masks = utils.repeat_tensors(beam_size,
                                                                                   [p_fc_feats, p_att_feats,
                                                                                    pp_att_feats, p_att_masks]
                                                                                   )
-        self.done_beams = self.beam_search(state, logprobs, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, opt=opt)
+        done_beams = self.beam_search(state, logprobs, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, opt=opt)
         for k in range(batch_size):
-            if sample_n == beam_size:
-                for _n in range(sample_n):
-                    seq_len = self.done_beams[k][_n]['seq'].shape[0]
-                    seq[k * sample_n + _n, :seq_len] = self.done_beams[k][_n]['seq']
-                    seqLogprobs[k * sample_n + _n, :seq_len] = self.done_beams[k][_n]['logps']
-            else:
-                seq_len = self.done_beams[k][0]['seq'].shape[0]
-                seq[k, :seq_len] = self.done_beams[k][0]['seq']  # the first beam has highest cumulative score
-                seqLogprobs[k, :seq_len] = self.done_beams[k][0]['logps']
-        # return the samples and their log likelihoods
+            seq_len = done_beams[k][0]['seq'].shape[0]
+            seq[k, :seq_len] = done_beams[k][0]['seq']  # the first beam has the highest cumulative score
+            seqLogprobs[k, :seq_len] = done_beams[k][0]['logps']
         return seq, seqLogprobs
 
     def _sample(self, fc_feats, att_feats, att_masks=None, opt={}):
@@ -125,15 +112,13 @@ class NewFCModel(CaptionModel):
 
         seq = fc_feats.new_zeros((batch_size * sample_n, self.seq_length), dtype=torch.long)
         seqLogprobs = fc_feats.new_zeros(batch_size * sample_n, self.seq_length, self.vocab_size + 1)
-        for t in range(self.seq_length + 1):
+        for t in range(self.seq_length):
             if t == 0:  # input <bos>
                 it = fc_feats.new_zeros(batch_size * sample_n, dtype=torch.long)
 
             logprobs, state = self.get_logprobs_state(it, p_fc_feats, p_att_feats, pp_att_feats, p_att_masks, state)
 
             # sample the next word
-            if t == self.seq_length:  # skip if we achieve maximum length
-                break
             it, _ = self.sample_next_word(logprobs, sample_method)
 
             # stop when all finished
@@ -149,7 +134,7 @@ class NewFCModel(CaptionModel):
             if unfinished.sum() == 0:
                 break
 
-        return seq, seqLogprobs
+        return seq.detach(), seqLogprobs
 
     def core(self, xt, fc_feats, att_feats, p_att_feats, state, att_masks):
         # Step 0, feed the input image
