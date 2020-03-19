@@ -111,5 +111,5 @@ As said in the original repo,
 | Name                        									  | CIDEr     | SPICE    |
 | :---:                     									    | :---:     | :---:    |
 | [NewFCModel](configs/fc.yml)                    | 1.007     | 0.188    |
-| [NewFCModel + self-critical](configs/fc_rl.yml) | 1.090     | 0.194    |
+| [NewFCModel + self-critical](configs/fc_rl.yml) | 1.091     | 0.192    |
 
