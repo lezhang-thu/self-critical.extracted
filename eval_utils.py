@@ -37,7 +37,7 @@ def language_eval(dataset, preds, eval_kwargs, split):
     preds_filt = [p for p in preds if p['image_id'] in valids]
     mean_perplexity = sum([_['perplexity'] for _ in preds_filt]) / len(preds_filt)
     mean_entropy = sum([_['entropy'] for _ in preds_filt]) / len(preds_filt)
-    print('using %d/%d predictions' % (len(preds_filt), len(preds)))
+    print('using {} / {} predictions'.format(len(preds_filt), len(preds)))
     json.dump(preds_filt, open(cache_path, 'w'))  # serialize to temporary json file. Sigh, COCO API ...
 
     cocoRes = coco.loadRes(cache_path)
@@ -87,9 +87,16 @@ def eval_split(model, loader, eval_kwargs={}):
             tmp_eval_kwargs = eval_kwargs.copy()
             tmp_eval_kwargs.update({'sample_n': 1})
             seq, seq_logprobs = model(fc_feats, att_feats, att_masks, opt=tmp_eval_kwargs, mode='sample')
-            seq = seq.data
-            entropy = - (F.softmax(seq_logprobs, dim=2) * seq_logprobs).sum(2).sum(1) / ((seq > 0).float().sum(1) + 1)
-            perplexity = - seq_logprobs.gather(2, seq.unsqueeze(2)).squeeze(2).sum(1) / ((seq > 0).float().sum(1) + 1)
+            
+            mask = seq > 0
+            mask = torch.cat([mask.new(mask.size(0), 1).fill_(1), mask[:, :-1]], 1)
+            entropy = torch.sum(torch.exp(seq_logprobs) * seq_logprobs, dim=-1)
+            entropy = torch.sum(entropy * mask, dim=-1) / torch.sum(mask, dim=-1)
+            entropy = - entropy
+
+            perplexity = seq_logprobs.gather(2, seq.unsqueeze(2)).squeeze(2)
+            perplexity = torch.sum(perplexity * mask, dim=-1) / torch.sum(mask, dim=-1)
+            perplexity = - perplexity
 
         sents = utils.decode_sequence(loader.get_vocab(), seq)
 

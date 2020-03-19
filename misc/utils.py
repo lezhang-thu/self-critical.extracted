@@ -53,14 +53,17 @@ class RewardCriterion(nn.Module):
         super(RewardCriterion, self).__init__()
 
     def forward(self, input, seq, reward):
-        input = input.gather(2, seq.unsqueeze(2)).squeeze(2)
+        entropy = torch.sum(torch.exp(input) * input, dim=-1).reshape(-1)
 
-        input = input.reshape(-1)
+        input = input.gather(2, seq.unsqueeze(2)).squeeze(2).reshape(-1)
         reward = reward.reshape(-1)
+        
         mask = (seq > 0).float()
         mask = torch.cat([mask.new(mask.size(0), 1).fill_(1), mask[:, :-1]], 1).reshape(-1)
+        
+        entropy *= mask
         output = - input * reward * mask
-        output = torch.sum(output) / torch.sum(mask)
+        output = (torch.sum(output) + torch.sum(entropy) * .01) / torch.sum(mask)
 
         return output
 
@@ -84,7 +87,7 @@ class LanguageModelCriterion(nn.Module):
         target = target[:, :input.size(1)]
         mask = mask[:, :input.size(1)]
 
-        output = -input.gather(2, target.unsqueeze(2)).squeeze(2) * mask
+        output = - input.gather(2, target.unsqueeze(2)).squeeze(2) * mask
         # Average over each token
         output = torch.sum(output) / torch.sum(mask)
 

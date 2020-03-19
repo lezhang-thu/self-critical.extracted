@@ -222,7 +222,7 @@ class Dataset(data.Dataset):
 
         data['labels'] = np.vstack(label_batch)
         # generate mask
-        nonzeros = np.array(list(map(lambda x: (x != 0).sum() + 2, data['labels'])))
+        nonzeros = np.array(list(map(lambda x: (x > 0).sum() + 2, data['labels'])))
         mask_batch = np.zeros([data['labels'].shape[0], self.seq_length + 2], dtype='float32')
         for ix, row in enumerate(mask_batch):
             row[:nonzeros[ix]] = 1
