@@ -37,7 +37,6 @@ def train(opt):
         with open(os.path.join(opt.checkpoint_path, 'infos_' + opt.id + '.pkl'), 'rb') as f:
             infos = utils.pickle_load(f)
             print('infos load success')
-            saved_model_opt = infos['opt']
     infos['opt'] = opt
 
     # tensorboard logger
@@ -64,7 +63,8 @@ def train(opt):
     ##########################
     #  Build optimizer
     ##########################
-    optimizer = utils.ReduceLROnPlateau(optim.Adam(model.parameters(), opt.learning_rate))
+    optimizer = utils.ReduceLROnPlateau(optim.Adam(model.parameters(), opt.learning_rate),
+            factor=0.5, patience=3)
     # Load the optimizer
     if opt.checkpoint_path is not None and os.path.isfile(os.path.join(opt.checkpoint_path, "optimizer.pth")):
         optimizer.load_state_dict(torch.load(os.path.join(opt.checkpoint_path, 'optimizer.pth')))
