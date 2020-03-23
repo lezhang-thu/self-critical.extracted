@@ -15,7 +15,9 @@ Download preprocessed coco captions from [link](http://cs.stanford.edu/people/ka
 Then do:
 
 ```bash
-$ python scripts/prepro_labels.py --input_json data/dataset_coco.json --output_json data/cocotalk.json --output_h5 data/cocotalk
+$ python scripts/prepro_labels.py --input_json data/dataset_coco.json \
+																	--output_json data/cocotalk.json \
+																	--output_h5 data/cocotalk
 ```
 
 `prepro_labels.py` will map all words that occur less than 5 times to a special `UNK` token, and create a vocabulary for all the remaining words. The image information and vocabulary are dumped into `data/cocotalk.json` and discretized caption data are dumped into `data/cocotalk_label.h5`.
@@ -47,7 +49,10 @@ When training using self-critical, you should first preprocess the dataset
 and get the cache for calculating cider score.
 
 ```bash
-$ python scripts/prepro_ngrams.py --input_json data/dataset_coco.json --dict_json data/cocotalk.json --output_pkl data/coco-train --split train
+$ python scripts/prepro_ngrams.py --input_json data/dataset_coco.json \
+																	--dict_json data/cocotalk.json \
+																	--output_pkl data/coco-train \
+																	--split train
 ```
 
 ## Get cider and coco-caption
